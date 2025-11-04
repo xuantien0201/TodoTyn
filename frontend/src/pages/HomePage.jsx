@@ -9,13 +9,14 @@ import { Pagination } from '@/components/ui/pagination'
 import React, { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import api from '@/lib/axios'
+import { visibleTaskLimit } from '@/lib/data'
 
 const HomePage = () => {
   const [taskBuffer, setTaskBuffer] = useState([]); //Buffer: chỉ là dữ liệu thô cần xử lý
   const [activeTaskCount, setActiveTaskCount] = useState(0);
   const [completeTaskCount, setCompleteTaskCount] = useState(0);
   const [filter, setFilter] = useState('all');
-
+  const [page, setPage] = useState(1);
 
   // chạy 1 lần duy nhất khi component render
   useEffect(() => {
@@ -40,32 +41,55 @@ const HomePage = () => {
   //biến 
   //lọc danh sách nhiệm vụ theo trạng thái
   const filteredTasks = taskBuffer.filter((task) => {
-  switch (filter) {
-    case 'active':
-      return task.status === 'active';
-    case 'completed':
-      return task.status === 'complete';
-    default: // mặc định là giữ nguyên all 
-      return true;
-  }
-});
-const handleTaskChanged = () => {
-  fetchTasks();
-}
+    switch (filter) {
+      case 'active':
+        return task.status === 'active';
+      case 'completed':
+        return task.status === 'complete';
+      default: // mặc định là giữ nguyên all 
+        return true;
+    }
+  });
 
-return (
-  <div className="min-h-screen w-full relative">
-    {/* Dashed Grid */}
-    <div
-      className="absolute inset-0 z-0"
-      style={{
-        backgroundImage: `
+  //Hàm .slice() trong JavaScript sẽ cắt mảng từ vị trí start đến trước vị trí end.
+  const visibleTasks = filteredTasks.slice(
+    // vị trí bắt đầu của trang hiện tại
+    (page - 1) * visibleTaskLimit,
+    // vị trí kết thúc
+    page * visibleTaskLimit 
+  );
+  const totalPages = Math.ceil(filteredTasks.length / visibleTaskLimit);
+
+  const handleNext = () => {
+    if(page < totalPages){
+      setPage((prev) => prev + 1);
+    }
+  };
+  const handlePrev = () => {
+    if(page > 1){
+      setPage((prev) => prev - 1);
+    }
+  };
+  const handlePageChange = (newPage) => {
+    setPage(newPage)
+  };
+  const handleTaskChanged = () => {
+    fetchTasks();
+  }
+
+  return (
+    <div className="min-h-screen w-full relative">
+      {/* Dashed Grid */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: `
         linear-gradient(to right, #e7e5e4 1px, transparent 1px),
         linear-gradient(to bottom, #e7e5e4 1px, transparent 1px)
       `,
-        backgroundSize: "20px 20px",
-        backgroundPosition: "0 0, 0 0",
-        maskImage: `
+          backgroundSize: "20px 20px",
+          backgroundPosition: "0 0, 0 0",
+          maskImage: `
         repeating-linear-gradient(
           to right,
           black 0px,
@@ -81,7 +105,7 @@ return (
           transparent 8px
         )
       `,
-        WebkitMaskImage: `
+          WebkitMaskImage: `
         repeating-linear-gradient(
           to right,
           black 0px,
@@ -97,48 +121,53 @@ return (
           transparent 8px
         )
       `,
-        maskComposite: "intersect",
-        WebkitMaskComposite: "source-in",
-      }}
-    />
-    {/* Your Content/Components */}
-    <div className='container pt-8 mx-auto relative z-10'>
-      <div className='w-full max-w-2xl -6 mx-auto space-y-6'>
+          maskComposite: "intersect",
+          WebkitMaskComposite: "source-in",
+        }}
+      />
+      {/* Your Content/Components */}
+      <div className='container pt-8 mx-auto relative z-10'>
+        <div className='w-full max-w-2xl -6 mx-auto space-y-6'>
 
-        {/* Đầu trang */}
-        <Header />
-        {/* Tạo nhiệm vụ */}
-        <AddTask
-          handleNewTaskAdded={handleTaskChanged}
-         />
-        {/* Thống kê và bộ lọc */}
-        <StatsAndFilters
-          filter={filter}
-          setFilter={setFilter}
-          activeTasksCount={activeTaskCount}
-          completedTasksCount={completeTaskCount}
-        />
-        {/* Danh sách nhiệm vụ */}
-        <TaskList 
-        filteredTasks={filteredTasks}
-        filter = {filter}
-        handleTaskChanged = {handleTaskChanged}
-        />
-        {/* Phân trang và lọc theo Date */}
-        <div className='flex flex-col items-center justify-between gap-6 sm:flex-row'>
-          <TaskListPagination />
-          <DateTimeFilter />
+          {/* Đầu trang */}
+          <Header />
+          {/* Tạo nhiệm vụ */}
+          <AddTask
+            handleNewTaskAdded={handleTaskChanged}
+          />
+          {/* Thống kê và bộ lọc */}
+          <StatsAndFilters
+            filter={filter}
+            setFilter={setFilter}
+            activeTasksCount={activeTaskCount}
+            completedTasksCount={completeTaskCount}
+          />
+          {/* Danh sách nhiệm vụ */}
+          <TaskList
+            filteredTasks={visibleTasks}
+            filter={filter}
+            handleTaskChanged={handleTaskChanged}
+          />
+          {/* Phân trang và lọc theo Date */}
+          <div className='flex flex-col items-center justify-between gap-6 sm:flex-row'>
+            <TaskListPagination
+              handleNext = {handleNext}
+              handlePrev = {handlePrev}
+              handlePageChange = {handlePageChange}
+              page = {page}
+              totalPages = {totalPages}
+             />
+          </div>
+          {/* Footer */}
+          <Footer
+            activeTasksCount={activeTaskCount}
+            completedTasksCount={completeTaskCount}
+          />
         </div>
-        {/* Footer */}
-        <Footer
-          activeTasksCount={activeTaskCount}
-          completedTasksCount={completeTaskCount}
-        />
       </div>
-    </div>
-  </div >
+    </div >
 
-)
+  )
 }
 
 export default HomePage
