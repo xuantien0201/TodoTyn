@@ -19,7 +19,7 @@ const TaskListPagination = ({
   const generatePages = () => {
     const pages = [];
 
-    if (totalPages < 3) {
+    if (totalPages < 4) {
       // hiện toàn bộ
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
