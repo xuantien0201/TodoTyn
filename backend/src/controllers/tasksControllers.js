@@ -1,7 +1,7 @@
 import Task from "../models/Task.js";
 
 export const getAllTasks = async (req, res) => {
-  const { filter = "today" } = req.query;
+  const { filter = "all" } = req.query;
   const now = new Date();
   let startDate;
 
