@@ -94,7 +94,7 @@ const HomePage = () => {
         }}
       />
       {/* Your Content/Components */}
-      <div className="container relative z-10 pt-8 mx-auto">
+      <div className="container relative z-10 pt-3 mx-auto">
         <div className="w-full max-w-2xl p-6 mx-auto space-y-6">
           {/* Đầu Trang */}
           <Header />
